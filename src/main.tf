@@ -12,22 +12,22 @@ terraform {
 }
 
 module "dynamodb" {
-  source = "./modules/dynamodb"
+  source     = "./modules/dynamodb"
   table_name = "crud-table"
-  hash_key = "id"
+  hash_key   = "id"
 }
 
 module "lambda" {
-  source = "./modules/lambda"
+  source               = "./modules/lambda"
   lambda_function_name = "crudLambdaFunction"
-  handler = "index.handler"
-  runtime = "nodejs16.x"
-  filename = "lambda.zip"
-  dynamodb_table_arn = module.dynamodb.table_arn
-  table_name = module.dynamodb.table_name
+  handler              = "index.handler"
+  runtime              = "nodejs16.x"
+  filename             = "lambda.zip"
+  dynamodb_table_arn   = module.dynamodb.table_arn
+  table_name           = module.dynamodb.table_name
 }
 
 module "apigateway" {
-  source = "./modules/apigateway"
+  source              = "./modules/apigateway"
   lambda_function_arn = module.lambda.lambda_arn
 }
