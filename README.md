@@ -69,6 +69,7 @@ Após aplicar o Terraform, a infraestrutura será criada na AWS conforme especif
 
    ```sh
    curl -X GET <API_GATEWAY_ENDPOINT>/path
+   ```
 
    Substitua <API_GATEWAY_ENDPOINT> pelo endpoint real da API Gateway e /path pelo caminho específico configurado no API Gateway.
 
