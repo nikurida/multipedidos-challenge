@@ -1,6 +1,4 @@
-bucket         =
-key            = "tf-infra/terraform.tfstate"
-region         = "sa-east-1"
-dynamodb_table = 
-encrypt        = true
-profile = "terraform"
+bucket         = ""
+key            = ""
+region         = ""
+dynamodb_table = ""
