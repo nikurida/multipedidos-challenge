@@ -5,7 +5,6 @@ set -o allexport
 source .env
 set -o allexport
 
-# Debug: Verificar se as variáveis de ambiente estão carregadas
 export AWS_REGION="sa-east-1"
 export AWS_PROFILE="terraform"
 

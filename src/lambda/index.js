@@ -1,128 +1,88 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-const TABLE_NAME = 'crud';
+const TABLE_NAME = process.env.TABLE_NAME || 'crud';
 
 exports.handler = async (event) => {
   console.log("Received event:", JSON.stringify(event, null, 2));
   const { httpMethod, body, pathParameters } = event;
-  let response;
 
   try {
+    let response;
+    const id = pathParameters?.id;
+
     switch (httpMethod) {
       case 'POST':
-        response = await createItem(JSON.parse(body));
+        response = await handleRequest(createItem, JSON.parse(body));
         break;
       case 'GET':
-        if (pathParameters && pathParameters.id) {
-          response = await getItem(pathParameters.id);
-        } else {
-          response = await scanTable();
-        }
+        response = id ? await handleRequest(getItem, { id }) : await handleRequest(scanTable);
         break;
       case 'PUT':
-        response = await updateItem(pathParameters.id, JSON.parse(body));
+        response = id ? await handleRequest(updateItem, { id, ...JSON.parse(body) }) : buildResponse(400, 'Missing ID in path parameters');
         break;
       case 'DELETE':
-        response = await deleteItem(pathParameters.id);
+        response = id ? await handleRequest(deleteItem, { id }) : buildResponse(400, 'Missing ID in path parameters');
         break;
       default:
         response = buildResponse(405, 'Method Not Allowed');
     }
+
+    return response;
   } catch (error) {
     console.error("Error processing request:", error);
-    response = buildResponse(500, 'Internal Server Error');
+    return buildResponse(500, 'Internal Server Error');
   }
-
-  console.log("Response:", JSON.stringify(response, null, 2));
-  return response;
 };
 
-const createItem = async (item) => {
-  const params = {
-    TableName: TABLE_NAME,
-    Item: item,
-  };
-
+const handleRequest = async (operation, params) => {
   try {
-    await dynamodb.put(params).promise();
-    return buildResponse(201, item);
+    const result = await operation(params);
+    return buildResponse(result.statusCode, result.body);
   } catch (error) {
-    console.error("Error creating item:", error);
+    console.error(`Error executing ${operation.name}:`, error);
     return buildResponse(500, error.message);
   }
 };
 
-const getItem = async (id) => {
-  const params = {
-    TableName: TABLE_NAME,
-    Key: { id },
-  };
+const createItem = async ({ id, ...item }) => {
+  const params = { TableName: TABLE_NAME, Item: { id, ...item } };
+  await dynamodb.put(params).promise();
+  return { statusCode: 201, body: params.Item };
+};
 
-  try {
-    const result = await dynamodb.get(params).promise();
-    if (result.Item) {
-      return buildResponse(200, result.Item);
-    } else {
-      return buildResponse(404, 'Item not found');
-    }
-  } catch (error) {
-    console.error("Error getting item:", error);
-    return buildResponse(500, error.message);
-  }
+const getItem = async ({ id }) => {
+  const params = { TableName: TABLE_NAME, Key: { id } };
+  const result = await dynamodb.get(params).promise();
+  return result.Item ? { statusCode: 200, body: result.Item } : { statusCode: 404, body: 'Item not found' };
 };
 
 const scanTable = async () => {
-  const params = {
-    TableName: TABLE_NAME,
-  };
-
-  try {
-    const result = await dynamodb.scan(params).promise();
-    return buildResponse(200, result.Items);
-  } catch (error) {
-    console.error("Error scanning table:", error);
-    return buildResponse(500, error.message);
-  }
+  const params = { TableName: TABLE_NAME };
+  const result = await dynamodb.scan(params).promise();
+  return { statusCode: 200, body: result.Items };
 };
 
-const updateItem = async (id, updateData) => {
+const updateItem = async ({ id, ...updateData }) => {
   const params = {
     TableName: TABLE_NAME,
     Key: { id },
-    UpdateExpression: 'set #attrName = :attrValue',
-    ExpressionAttributeNames: { '#attrName': Object.keys(updateData)[0] },
-    ExpressionAttributeValues: { ':attrValue': Object.values(updateData)[0] },
-    ReturnValues: 'ALL_NEW',
+    UpdateExpression: `set ${Object.keys(updateData).map((key, i) => `#${key} = :value${i}`).join(', ')}`,
+    ExpressionAttributeNames: Object.keys(updateData).reduce((acc, key) => ({ ...acc, [`#${key}`]: key }), {}),
+    ExpressionAttributeValues: Object.keys(updateData).reduce((acc, key, i) => ({ ...acc, [`:value${i}`]: updateData[key] }), {}),
+    ReturnValues: 'ALL_NEW'
   };
-
-  try {
-    const result = await dynamodb.update(params).promise();
-    return buildResponse(200, result.Attributes);
-  } catch (error) {
-    console.error("Error updating item:", error);
-    return buildResponse(500, error.message);
-  }
+  const result = await dynamodb.update(params).promise();
+  return { statusCode: 200, body: result.Attributes };
 };
 
-const deleteItem = async (id) => {
-  const params = {
-    TableName: TABLE_NAME,
-    Key: { id },
-  };
-
-  try {
-    await dynamodb.delete(params).promise();
-    return buildResponse(204, null);
-  } catch (error) {
-    console.error("Error deleting item:", error);
-    return buildResponse(500, error.message);
-  }
+const deleteItem = async ({ id }) => {
+  const params = { TableName: TABLE_NAME, Key: { id } };
+  await dynamodb.delete(params).promise();
+  return { statusCode: 204, body: null };
 };
 
-const buildResponse = (statusCode, body) => {
-  return {
-    statusCode,
-    body: JSON.stringify(body),
-  };
-};
+const buildResponse = (statusCode, body) => ({
+  statusCode,
+  body: JSON.stringify(body),
+});
