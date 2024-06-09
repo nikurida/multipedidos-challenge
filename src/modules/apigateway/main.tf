@@ -17,9 +17,27 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   integration_uri  = var.lambda_function_arn
 }
 
-resource "aws_apigatewayv2_route" "default_route" {
+resource "aws_apigatewayv2_route" "put_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "$default"
+  route_key = "PUT /{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "get_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "delete_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "DELETE /{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "post_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
