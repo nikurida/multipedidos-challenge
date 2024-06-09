@@ -39,8 +39,10 @@ Este projeto foi criado para resolver um desafio técnico usando Terraform para 
    ```sh
    tfenv use ou tfenv install # caso utilize o tfenv
    cd src
-   terraform init
-   terraform apply
+   chmod -x terraform-init.sh deploy-lambda.sh # ou substituia o -x por 777 
+   ./terraform-init # execute via script para atribuir corretamente as variaveis ambiente e criar o arquivo .tfvars.json para alocação automatica das variaveis
+   ./deploy-lambda.sh # execute esse segundo script para instalar as dependencias para função lambda corretamente e criar o arquivo .zip para upload na aws
+   terraform apply # o uso do -auto-approve fica a seu critério
 
 ## Estrutura do Projeto
 
@@ -49,6 +51,7 @@ Este projeto foi criado para resolver um desafio técnico usando Terraform para 
 - `src/variables.tf`: Definição das variáveis.
 - `src/outputs.tf`: Definição das saídas.
 - `src/modules/dynamodb`: Módulo para configuração do DynamoDB.
+- `src/modules/security_group`: Módulo para configuração do Security Group para lambda function regitrar os logs no cloudwatch.
 - `src/modules/lambda`: Módulo para configuração do Lambda.
 - `src/modules/apigateway`: Módulo para configuração do API Gateway.
 
