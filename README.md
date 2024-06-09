@@ -65,28 +65,35 @@ Após aplicar o Terraform, a infraestrutura será criada na AWS conforme especif
 
    Após a conclusão da execução do Terraform, você pode encontrar o endpoint da API Gateway no console da AWS ou através da saída do Terraform, se configurado para mostrar o endpoint.
 
-2. **Envie uma solicitação HTTP:**
+2. **Defina uma variável de ambiente para o endpoint da API:**
+
+   Para facilitar as chamadas subsequentes, exporte o endpoint da API para uma variável de ambiente:
+
+   ```sh
+   export API_ENDPOINT=https://SUA_API_ID.execute-api.YOUR_REGION.amazonaws.com
+
+3. **Envie uma solicitação HTTP:**
 
    Use ferramentas como `curl`, Postman ou qualquer cliente HTTP de sua escolha para enviar uma solicitação para o endpoint da API.
 
    ```sh
    # Criar um item:
-   curl -X POST https://SUA_API_ID.execute-api.YOUR_REGION.amazonaws.com/ -H "Content-Type: application/json" -d '{"id": "123", "name": "ItemName"}'
+   curl -X POST $API_ENDPOINT/ -H "Content-Type: application/json" -d '{"id": "123", "name": "ItemName"}'
 
-   # Obter todos os itens:
-   curl -X GET https://SUA_API_ID.execute-api.AWS_REGIAO.amazonaws.com/
+   # Obter todos os itens
+   curl -X GET $API_ENDPOINT/
 
-   # Obter um item específico:
-   curl -X GET https://SUA_API_ID.execute-api.AWS_REGIAO.amazonaws.com/123
+   # Obter um item específico
+   curl -X GET $API_ENDPOINT/123
 
-   # Atualizar um item específico:
-   curl -X PUT https://SUA_API_ID.execute-api.AWS_REGIAO.amazonaws.com/123 -H "Content-Type: application/json" -d '{"name": "UpdatedName"}'
+   # Atualizar um item específico
+   curl -X PUT $API_ENDPOINT/123 -H "Content-Type: application/json" -d '{"name": "UpdatedName"}'
 
-   # Excluir um item específico:
-   curl -X DELETE https://SUA_API_ID.execute-api.AWS_REGIAO.amazonaws.com/123
+   # Excluir um item específico
+   curl -X DELETE $API_ENDPOINT/123
    ```
 
-3. **Verifique a resposta:**
+4. **Verifique a resposta:**
 
    A resposta deve ser a saída esperada da função Lambda configurada. Verifique os logs no CloudWatch para depuração, se necessário.
 
