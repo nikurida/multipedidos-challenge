@@ -48,7 +48,6 @@ Este projeto foi criado para resolver um desafio técnico usando Terraform para 
 - `src/providers.tf`: Configuração dos provedores.
 - `src/variables.tf`: Definição das variáveis.
 - `src/outputs.tf`: Definição das saídas.
-- `src/modules/vpc`: Módulo para configuração da VPC.
 - `src/modules/dynamodb`: Módulo para configuração do DynamoDB.
 - `src/modules/lambda`: Módulo para configuração do Lambda.
 - `src/modules/apigateway`: Módulo para configuração do API Gateway.

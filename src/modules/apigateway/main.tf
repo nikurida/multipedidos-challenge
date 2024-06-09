@@ -3,6 +3,7 @@ resource "aws_lambda_permission" "apigw_permission" {
   action        = "lambda:InvokeFunction"
   function_name = var.lambda_function_arn
   principal     = "apigateway.amazonaws.com"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_api.http_api.id}/*"
 }
 
 resource "aws_apigatewayv2_api" "http_api" {
@@ -16,7 +17,7 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   integration_uri  = var.lambda_function_arn
 }
 
-resource "aws_apigatewayv2_route" "any_route" {
+resource "aws_apigatewayv2_route" "default_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "$default"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
@@ -27,3 +28,5 @@ resource "aws_apigatewayv2_stage" "default_stage" {
   name        = "$default"
   auto_deploy = true
 }
+
+data "aws_caller_identity" "current" {}

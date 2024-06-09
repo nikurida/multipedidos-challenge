@@ -27,3 +27,18 @@ variable "table_name" {
   description = "The name of the DynamoDB table"
   type        = string
 }
+
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}
+
+variable "subnets" {
+  description = "Subnets IDs"
+  type        = list(string)
+}
+
+variable "security_group_id" {
+  description = "Security Group ID"
+  type        = string
+}

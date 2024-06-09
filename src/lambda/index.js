@@ -1,33 +1,40 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-const TABLE_NAME = process.env.TABLE_NAME || '';
+const TABLE_NAME = 'crud';
 
 exports.handler = async (event) => {
+  console.log("Received event:", JSON.stringify(event, null, 2));
   const { httpMethod, body, pathParameters } = event;
   let response;
 
-  switch (httpMethod) {
-    case 'POST':
-      response = await createItem(JSON.parse(body));
-      break;
-    case 'GET':
-      if (pathParameters && pathParameters.id) {
-        response = await getItem(pathParameters.id);
-      } else {
-        response = await scanTable();
-      }
-      break;
-    case 'PUT':
-      response = await updateItem(pathParameters.id, JSON.parse(body));
-      break;
-    case 'DELETE':
-      response = await deleteItem(pathParameters.id);
-      break;
-    default:
-      response = buildResponse(405, 'Method Not Allowed');
+  try {
+    switch (httpMethod) {
+      case 'POST':
+        response = await createItem(JSON.parse(body));
+        break;
+      case 'GET':
+        if (pathParameters && pathParameters.id) {
+          response = await getItem(pathParameters.id);
+        } else {
+          response = await scanTable();
+        }
+        break;
+      case 'PUT':
+        response = await updateItem(pathParameters.id, JSON.parse(body));
+        break;
+      case 'DELETE':
+        response = await deleteItem(pathParameters.id);
+        break;
+      default:
+        response = buildResponse(405, 'Method Not Allowed');
+    }
+  } catch (error) {
+    console.error("Error processing request:", error);
+    response = buildResponse(500, 'Internal Server Error');
   }
 
+  console.log("Response:", JSON.stringify(response, null, 2));
   return response;
 };
 
@@ -41,6 +48,7 @@ const createItem = async (item) => {
     await dynamodb.put(params).promise();
     return buildResponse(201, item);
   } catch (error) {
+    console.error("Error creating item:", error);
     return buildResponse(500, error.message);
   }
 };
@@ -59,6 +67,7 @@ const getItem = async (id) => {
       return buildResponse(404, 'Item not found');
     }
   } catch (error) {
+    console.error("Error getting item:", error);
     return buildResponse(500, error.message);
   }
 };
@@ -72,6 +81,7 @@ const scanTable = async () => {
     const result = await dynamodb.scan(params).promise();
     return buildResponse(200, result.Items);
   } catch (error) {
+    console.error("Error scanning table:", error);
     return buildResponse(500, error.message);
   }
 };
@@ -90,6 +100,7 @@ const updateItem = async (id, updateData) => {
     const result = await dynamodb.update(params).promise();
     return buildResponse(200, result.Attributes);
   } catch (error) {
+    console.error("Error updating item:", error);
     return buildResponse(500, error.message);
   }
 };
@@ -104,6 +115,7 @@ const deleteItem = async (id) => {
     await dynamodb.delete(params).promise();
     return buildResponse(204, null);
   } catch (error) {
+    console.error("Error deleting item:", error);
     return buildResponse(500, error.message);
   }
 };
