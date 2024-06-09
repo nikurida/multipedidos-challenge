@@ -58,7 +58,7 @@ module "lambda" {
 module "apigateway" {
   source              = "./modules/apigateway"
   lambda_function_arn = module.lambda.lambda_arn
-  region = var.region
+  region              = var.region
   depends_on          = [module.lambda]
 }
 
