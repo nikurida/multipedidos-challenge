@@ -70,7 +70,20 @@ Após aplicar o Terraform, a infraestrutura será criada na AWS conforme especif
    Use ferramentas como `curl`, Postman ou qualquer cliente HTTP de sua escolha para enviar uma solicitação para o endpoint da API.
 
    ```sh
-   curl -X GET <API_GATEWAY_ENDPOINT>/path
+   # Criar um item:
+   curl -X POST https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/ -H "Content-Type: application/json" -d '{"id": "123", "name": "ItemName"}'
+
+   # Obter todos os itens:
+   curl -X GET https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/
+
+   # Obter um item específico:
+   curl -X GET https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/123
+
+   # Atualizar um item específico:
+   curl -X PUT https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/123 -H "Content-Type: application/json" -d '{"name": "UpdatedName"}'
+
+   # Excluir um item específico:
+   curl -X DELETE https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/123
    ```
 
    Substitua <API_GATEWAY_ENDPOINT> pelo endpoint real da API Gateway e /path pelo caminho específico configurado no API Gateway.
